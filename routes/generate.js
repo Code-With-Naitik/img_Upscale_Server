@@ -123,33 +123,32 @@ router.post('/', upload.single('referenceImage'), optionalAuth, async (req, res)
     const dbOriginalMeta = req.file ? tryonOriginalMeta : originalMeta;
     const dbEnhancedMeta = enhancedMeta;
 
-    // Save to database if user logged in
-    let imageDoc = null;
-    if (req.user) {
-      imageDoc = await Image.create({
-        user: req.user._id,
-        type: req.file ? 'enhanced' : 'generated',
-        prompt,
-        originalUrl: dbOriginalUrl,
-        enhancedUrl: dbEnhancedUrl,
-        originalSize: dbOriginalMeta,
-        enhancedSize: dbEnhancedMeta,
-        upscaleLevel,
-        status: 'completed',
-        model: model || 'black-forest-labs/FLUX.1-Krea-dev',
-        style,
-        metadata: { 
-          negativePrompt, 
-          width, 
-          height, 
-          isTryon: !!req.file,
-          modelGender, 
-          modelType, 
-          modelSetting,
-          generatedBaseUrl: originalUrl
-        }
-      });
+    // Save to database
+    const imageDoc = await Image.create({
+      user: req.user ? req.user._id : null,
+      type: req.file ? 'enhanced' : 'generated',
+      prompt,
+      originalUrl: dbOriginalUrl,
+      enhancedUrl: dbEnhancedUrl,
+      originalSize: dbOriginalMeta,
+      enhancedSize: dbEnhancedMeta,
+      upscaleLevel,
+      status: 'completed',
+      model: model || 'black-forest-labs/FLUX.1-Krea-dev',
+      style,
+      metadata: { 
+        negativePrompt, 
+        width, 
+        height, 
+        isTryon: !!req.file,
+        modelGender, 
+        modelType, 
+        modelSetting,
+        generatedBaseUrl: originalUrl
+      }
+    });
 
+    if (req.user) {
       // Deduct credit and update stats
       await User.findByIdAndUpdate(req.user._id, {
         $inc: { credits: -1, totalGenerated: 1 }
@@ -160,7 +159,7 @@ router.post('/', upload.single('referenceImage'), optionalAuth, async (req, res)
       success: true,
       message: req.file ? 'AI Model Try-on image generated successfully' : 'Image generated and enhanced successfully',
       data: {
-        id: imageDoc?._id || uuidv4(),
+        id: imageDoc._id,
         originalUrl: dbOriginalUrl,
         enhancedUrl: dbEnhancedUrl,
         originalSize: dbOriginalMeta,

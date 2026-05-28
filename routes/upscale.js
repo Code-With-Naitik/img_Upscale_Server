@@ -53,20 +53,20 @@ router.post('/', upload.single('image'), optionalAuth, async (req, res) => {
     enhancedMeta = await getImageMetadata(enhancedPath);
     enhancedUrl = `${baseUrl}/uploads/${enhancedFilename}`;
 
-    // Save to DB if logged in
-    let imageDoc = null;
-    if (req.user) {
-      imageDoc = await Image.create({
-        user: req.user._id,
-        type: 'upscaled',
-        originalUrl,
-        enhancedUrl,
-        originalSize: originalMeta,
-        enhancedSize: enhancedMeta,
-        upscaleLevel,
-        status: 'completed'
-      });
+    // Save to DB
+    const imageDoc = await Image.create({
+      user: req.user ? req.user._id : null,
+      type: 'upscaled',
+      prompt: req.file ? `Upscaled: ${req.file.originalname}` : 'Upscaled Image',
+      originalUrl,
+      enhancedUrl,
+      originalSize: originalMeta,
+      enhancedSize: enhancedMeta,
+      upscaleLevel,
+      status: 'completed'
+    });
 
+    if (req.user) {
       await User.findByIdAndUpdate(req.user._id, {
         $inc: { credits: -1, totalUpscaled: 1 }
       });
@@ -76,7 +76,7 @@ router.post('/', upload.single('image'), optionalAuth, async (req, res) => {
       success: true,
       message: `Image upscaled to ${upscaleLevel} successfully`,
       data: {
-        id: imageDoc?._id || uuidv4(),
+        id: imageDoc._id,
         originalUrl,
         enhancedUrl,
         originalSize: originalMeta,

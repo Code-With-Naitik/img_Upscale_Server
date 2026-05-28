@@ -1,13 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, optionalAuth } = require('../middleware/auth');
 const Image = require('../models/Image');
 
 // @route GET /api/history
-router.get('/', protect, async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { page = 1, limit = 12, type, search } = req.query;
-    const query = { user: req.user._id };
+    const query = {};
+    if (req.user) {
+      query.user = req.user._id;
+    } else {
+      query.user = null;
+    }
 
     if (type && type !== 'all') query.type = type;
     if (search) query.prompt = { $regex: search, $options: 'i' };

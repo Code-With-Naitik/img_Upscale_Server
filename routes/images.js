@@ -9,7 +9,7 @@ const Image = require('../models/Image');
 router.get('/stats', protect, async (req, res) => {
   try {
     const [totalGenerated, totalUpscaled, favorites] = await Promise.all([
-      Image.countDocuments({ user: req.user._id, type: 'generated' }),
+      Image.countDocuments({ user: req.user._id, type: { $in: ['generated', 'enhanced'] } }),
       Image.countDocuments({ user: req.user._id, type: 'upscaled' }),
       Image.countDocuments({ user: req.user._id, isFavorite: true })
     ]);
