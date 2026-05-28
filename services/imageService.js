@@ -2,7 +2,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-const uploadsDir = path.join(__dirname, '../uploads');
+const uploadsDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../uploads');
 
 /**
  * Save buffer as image file

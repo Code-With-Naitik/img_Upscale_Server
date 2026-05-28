@@ -42,7 +42,8 @@ router.get('/download', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid filename' });
     }
 
-    const filePath = path.join(__dirname, '../uploads', filename);
+    const uploadsDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../uploads');
+    const filePath = path.join(uploadsDir, filename);
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ success: false, message: 'File not found' });
     }

@@ -38,7 +38,8 @@ router.post('/', upload.single('image'), optionalAuth, async (req, res) => {
     let enhancedUrl = null;
     let enhancedMeta = null;
     const enhancedFilename = `upscaled-${uuidv4()}.jpg`;
-    const enhancedPath = path.join(__dirname, '../uploads', enhancedFilename);
+    const uploadsDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../uploads');
+    const enhancedPath = path.join(uploadsDir, enhancedFilename);
 
     try {
       const enhancedBuffer = await upscaleImage(inputPath, upscaleLevel);

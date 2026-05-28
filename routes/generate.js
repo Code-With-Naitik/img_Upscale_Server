@@ -77,7 +77,8 @@ router.post('/', upload.single('referenceImage'), optionalAuth, async (req, res)
 
     // Save original generated image
     const originalFilename = `gen-${uuidv4()}.jpg`;
-    const originalPath = path.join(__dirname, '../uploads', originalFilename);
+    const uploadsDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../uploads');
+    const originalPath = path.join(uploadsDir, originalFilename);
     await saveImageBuffer(generatedBuffer, originalFilename);
 
     const originalMeta = await getImageMetadata(originalPath);
@@ -90,7 +91,7 @@ router.post('/', upload.single('referenceImage'), optionalAuth, async (req, res)
 
     try {
       const enhancedFilename = `enh-${uuidv4()}.jpg`;
-      const enhancedPath = path.join(__dirname, '../uploads', enhancedFilename);
+      const enhancedPath = path.join(uploadsDir, enhancedFilename);
 
       // Try external upscaler first
       let enhancedBuffer = null;
